@@ -33,6 +33,9 @@ class Preloader extends Phaser.State {
     this.game.load.tilemap('map', 'assets/tiledata/level1.json', null, Phaser.Tilemap.TILED_JSON);
     this.game.load.image('tiles', 'assets/tiledata/tileset.png');
 
+    // character sheets
+    this.game.load.atlasJSONArray('playersheet', 'assets/sheets/player.png', 'assets/sheets/player.json');
+
 
   }
 
