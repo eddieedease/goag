@@ -37,9 +37,9 @@ class Level1 extends Phaser.State {
     // this.layerbackground.renderSettings.enableScrollDelta = true;
     // this.layerbackground.setScale(1.6);
     this.game.physics.enable(this.player);
-    this.player.body.setSize(25, 25, 25, 27);
+    this.player.body.setSize(15, 18, 30, 32);
 
-    this.game.physics.arcade.gravity.y = 400;
+    this.game.physics.arcade.gravity.y = 600;
 
     this.player.body.bounce.y = 0.1;
     this.player.body.linearDamping = 1;
@@ -82,7 +82,7 @@ class Level1 extends Phaser.State {
   }
 
   render() {
-    // this.game.debug.body(this.player);
+     //this.game.debug.body(this.player);
     // this.game.debug.bodyInfo(this.player, 32, 20);
   }
 
