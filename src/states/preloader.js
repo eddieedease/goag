@@ -20,6 +20,7 @@ class Preloader extends Phaser.State {
 
     // example imports for game.js
     this.game.load.image('background','assets/bg_wood.png');
+    this.game.load.image('introbg','assets/introbg.png');
     this.game.load.image('crosshairs', 'assets/crosshair_red_small.png');
     this.game.load.image('text_go', 'assets/text_go.png');
     this.game.load.image('text_ready', 'assets/text_ready.png');
@@ -35,6 +36,7 @@ class Preloader extends Phaser.State {
 
     // character sheets
     this.game.load.atlasJSONArray('playersheet', 'assets/sheets/player.png', 'assets/sheets/player.json');
+    this.game.load.atlasJSONArray('wizardsheet', 'assets/sheets/wizard.png', 'assets/sheets/wizard.json');
 
 
   }
