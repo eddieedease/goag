@@ -77,7 +77,9 @@ class Level1 extends Phaser.State {
       this.enemy.animations.add('crouch', Phaser.Animation.generateFrameNames('wizard_2__crouch_', 1, 2, '.png', 3), 10, false, false);
       this.enemy.animations.add('standing', [0], 20, true);
 
+      // facingenemy should be right or left
       this.facingenemy = 'left';
+      this.enemy.scale.x = -1.5;
       // this.layerbackground.renderSettings.enableScrollDelta = true;
       // this.layerbackground.setScale(1.6);
       this.game.physics.enable(this.enemy);
@@ -90,12 +92,21 @@ class Level1 extends Phaser.State {
 
   }
 
+  // the whole player controls and input update loop
+  // states
   update() {
 
     // update Enemy loop
     // whats needs to collide?
-    this.game.physics.arcade.collide(this.enemy, this.collisionlayer);
-    this.game.physics.arcade.collide(this.player, this.enemy);
+    
+
+
+    // if enemy is alive
+    if (this.enemyalive === true) {
+      
+      this.enemyAI();
+    }
+
     this.game.physics.arcade.collide(this.player, this.collisionlayer);
     this.player.body.velocity.x = 0;
     var frameaction = false;
@@ -143,6 +154,67 @@ class Level1 extends Phaser.State {
     }
 
   }
+
+
+
+
+  enemyAI() {
+     // What side are we facing?
+     if (this.facingenemy === "left") {
+      this.enemy.animations.play('walk');
+      this.enemy.body.velocity.x = -250;
+      
+    } else if (this.facingenemy === "right") {
+      this.enemy.animations.play('walk');
+      this.enemy.body.velocity.x = 250;
+      
+    }
+
+    this.game.physics.arcade.collide(this.player, this.enemy);
+    this.game.physics.arcade.collide(this.enemy, this.collisionlayer,this.enemyCollisionHandler, null, this);
+
+    // add probability to jump with random number
+    var x = Math.floor((Math.random() * 100) + 1);
+    if (x === 9){
+      if (this.enemy.body.onFloor()) {
+        this.enemy.body.velocity.y = -400;
+        this.enemy.animations.play('jump');
+
+      } else {
+
+      }
+    }
+
+
+  }
+
+
+  // eneymy tilemap collision handler
+  enemyCollisionHandler(spriteThatCollided, tileThatCollided){
+    //console.log(spriteThatCollided.body.onFloor());
+    // The turning when colliding in objects
+    if(spriteThatCollided.body.blocked.left){
+      this.facingenemy = "right";
+      this.enemy.body.velocity.x = 250;
+      this.enemy.scale.x = 1.5;
+    }
+
+    if(spriteThatCollided.body.blocked.right){
+      this.facingenemy = "left";
+      this.enemy.body.velocity.x = -250;
+      this.enemy.scale.x = -1.5;
+    }
+  }
+
+
+
+
+
+
+
+
+
+
 
   paused() {
 
