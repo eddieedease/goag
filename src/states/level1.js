@@ -69,11 +69,11 @@ class Level1 extends Phaser.State {
 
       this.enemies = this.game.add.physicsGroup();
 
-      for (var i = 0; i < 3; i++) {
+      for (var i = 0; i < 9; i++) {
         var rand = this.game.rnd.between(100, 900);
         // var enemy = this.game.add.sprite(rand, 30, 'wizardsheet', 'wizard_2_walk_001.png');
 
-        var enemy = this.enemies.create(this.game.world.randomX, this.game.world.randomY, 'wizardsheet');
+        var enemy = this.enemies.create(this.game.world.randomX, 30, 'wizardsheet');
         enemy.scale.setTo(1.5, 1.5);
         enemy.anchor.setTo(0.5, 0.5);
   
@@ -175,22 +175,23 @@ class Level1 extends Phaser.State {
 
   enemyAI(enemy) {
     // What side are we facing?
-    if (this.facingenemy === "left") {
+    if (enemy.scale.x <= 0 ) {
       enemy.animations.play('walk');
       enemy.body.velocity.x = -250;
 
-    } else if (this.facingenemy === "right") {
+    } else if (enemy.scale.x >= 0) {
       enemy.animations.play('walk');
       enemy.body.velocity.x = 250;
 
     }
 
     this.game.physics.arcade.collide(this.player, enemy);
+    this.game.physics.arcade.collide(this.enemies, enemy);
     this.game.physics.arcade.collide(enemy, this.collisionlayer, this.enemyCollisionHandler, null, this);
     
 
     // add probability to jump with random number
-    var x = Math.floor((Math.random() * 100) + 1);
+    var x = Math.floor((Math.random() * 10) + 1);
     if (x === 9) {
       if (enemy.body.onFloor()) {
         enemy.body.velocity.y = -400;
@@ -208,13 +209,11 @@ class Level1 extends Phaser.State {
     //console.log(spriteThatCollided.body.onFloor());
     // The turning when colliding in objects
     if (spriteThatCollided.body.blocked.left) {
-      this.facingenemy = "right";
       spriteThatCollided.body.velocity.x = 250;
       spriteThatCollided.scale.x = 1.5;
     }
 
     if (spriteThatCollided.body.blocked.right) {
-      this.facingenemy = "left";
       spriteThatCollided.body.velocity.x = -250;
       spriteThatCollided.scale.x = -1.5;
     }
