@@ -13,6 +13,9 @@ class Level1 extends Phaser.State {
     // testVars
     this.enemyalive = true;
 
+
+
+
     // enable arcade Physics
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
     // set gravity
@@ -63,29 +66,41 @@ class Level1 extends Phaser.State {
     // ENEMY ENEMY
     // AI
     if (this.enemyalive === true) {
-      this.enemy = this.game.add.sprite(900, 180, 'wizardsheet', 'wizard_2_walk_001.png');
-      this.enemy.scale.setTo(1.5, 1.5);
-      this.enemy.anchor.setTo(0.5, 0.5);
 
-      // animation sets
-      this.enemy.animations.add('walk', Phaser.Animation.generateFrameNames('wizard_2_walk_', 1, 8, '.png', 3), 10, true, false);
-      this.enemy.animations.add('run', Phaser.Animation.generateFrameNames('wizard_2_run_', 1, 8, '.png', 3), 10, true, false);
-      this.enemy.animations.add('jump', Phaser.Animation.generateFrameNames('wizard_2_jump_', 1, 4, '.png', 3), 10, false, false);
-      this.enemy.animations.add('attack', Phaser.Animation.generateFrameNames('wizard_2_attack-a_', 1, 4, '.png', 3), 10, true, false);
-      this.enemy.animations.add('die', Phaser.Animation.generateFrameNames('wizard_2_die_', 1, 5, '.png', 3), 10, true, false);
-      this.enemy.animations.add('hit', Phaser.Animation.generateFrameNames('wizard_2_hit_', 1, 2, '.png', 3), 10, false, false);
-      this.enemy.animations.add('crouch', Phaser.Animation.generateFrameNames('wizard_2__crouch_', 1, 2, '.png', 3), 10, false, false);
-      this.enemy.animations.add('standing', [0], 20, true);
+      this.enemies = this.game.add.physicsGroup();
 
-      // facingenemy should be right or left
-      this.facingenemy = 'left';
-      this.enemy.scale.x = -1.5;
-      // this.layerbackground.renderSettings.enableScrollDelta = true;
-      // this.layerbackground.setScale(1.6);
-      this.game.physics.enable(this.enemy);
-      this.enemy.body.setSize(15, 18, 30, 32);
-      this.enemy.body.bounce.y = 0.1;
-      this.enemy.body.linearDamping = 1;
+      for (var i = 0; i < 3; i++) {
+        var rand = this.game.rnd.between(100, 900);
+        // var enemy = this.game.add.sprite(rand, 30, 'wizardsheet', 'wizard_2_walk_001.png');
+
+        var enemy = this.enemies.create(this.game.world.randomX, this.game.world.randomY, 'wizardsheet');
+        enemy.scale.setTo(1.5, 1.5);
+        enemy.anchor.setTo(0.5, 0.5);
+  
+        // animation sets
+        enemy.animations.add('walk', Phaser.Animation.generateFrameNames('wizard_2_walk_', 1, 8, '.png', 3), 10, true, false);
+        enemy.animations.add('run', Phaser.Animation.generateFrameNames('wizard_2_run_', 1, 8, '.png', 3), 10, true, false);
+        enemy.animations.add('jump', Phaser.Animation.generateFrameNames('wizard_2_jump_', 1, 4, '.png', 3), 10, false, false);
+        enemy.animations.add('attack', Phaser.Animation.generateFrameNames('wizard_2_attack-a_', 1, 4, '.png', 3), 10, true, false);
+        enemy.animations.add('die', Phaser.Animation.generateFrameNames('wizard_2_die_', 1, 5, '.png', 3), 10, true, false);
+        enemy.animations.add('hit', Phaser.Animation.generateFrameNames('wizard_2_hit_', 1, 2, '.png', 3), 10, false, false);
+        enemy.animations.add('crouch', Phaser.Animation.generateFrameNames('wizard_2__crouch_', 1, 2, '.png', 3), 10, false, false);
+        enemy.animations.add('standing', [0], 20, true);
+  
+        // facingenemy should be right or left
+        this.facingenemy = 'left';
+        enemy.scale.x = -1.5;
+        // this.layerbackground.renderSettings.enableScrollDelta = true;
+        // this.layerbackground.setScale(1.6);
+        this.game.physics.enable(enemy);
+        enemy.body.setSize(15, 18, 30, 32);
+        enemy.body.bounce.y = 0.1;
+        enemy.body.linearDamping = 1;
+
+      }
+
+
+     
     }
 
 
@@ -98,13 +113,13 @@ class Level1 extends Phaser.State {
 
     // update Enemy loop
     // whats needs to collide?
-    
+
 
 
     // if enemy is alive
     if (this.enemyalive === true) {
+      this.enemies.forEach(this.enemyAI, this);
       
-      this.enemyAI();
     }
 
     this.game.physics.arcade.collide(this.player, this.collisionlayer);
@@ -158,63 +173,52 @@ class Level1 extends Phaser.State {
 
 
 
-  enemyAI() {
-     // What side are we facing?
-     if (this.facingenemy === "left") {
-      this.enemy.animations.play('walk');
-      this.enemy.body.velocity.x = -250;
-      
+  enemyAI(enemy) {
+    // What side are we facing?
+    if (this.facingenemy === "left") {
+      enemy.animations.play('walk');
+      enemy.body.velocity.x = -250;
+
     } else if (this.facingenemy === "right") {
-      this.enemy.animations.play('walk');
-      this.enemy.body.velocity.x = 250;
-      
+      enemy.animations.play('walk');
+      enemy.body.velocity.x = 250;
+
     }
 
-    this.game.physics.arcade.collide(this.player, this.enemy);
-    this.game.physics.arcade.collide(this.enemy, this.collisionlayer,this.enemyCollisionHandler, null, this);
+    this.game.physics.arcade.collide(this.player, enemy);
+    this.game.physics.arcade.collide(enemy, this.collisionlayer, this.enemyCollisionHandler, null, this);
+    
 
     // add probability to jump with random number
     var x = Math.floor((Math.random() * 100) + 1);
-    if (x === 9){
-      if (this.enemy.body.onFloor()) {
-        this.enemy.body.velocity.y = -400;
-        this.enemy.animations.play('jump');
-
+    if (x === 9) {
+      if (enemy.body.onFloor()) {
+        enemy.body.velocity.y = -400;
+        enemy.animations.play('jump');
       } else {
-
       }
     }
-
-
   }
 
 
   // eneymy tilemap collision handler
-  enemyCollisionHandler(spriteThatCollided, tileThatCollided){
+  enemyCollisionHandler(spriteThatCollided, tileThatCollided) {
+
+    console.log("doesss something happens?");
     //console.log(spriteThatCollided.body.onFloor());
     // The turning when colliding in objects
-    if(spriteThatCollided.body.blocked.left){
+    if (spriteThatCollided.body.blocked.left) {
       this.facingenemy = "right";
-      this.enemy.body.velocity.x = 250;
-      this.enemy.scale.x = 1.5;
+      spriteThatCollided.body.velocity.x = 250;
+      spriteThatCollided.scale.x = 1.5;
     }
 
-    if(spriteThatCollided.body.blocked.right){
+    if (spriteThatCollided.body.blocked.right) {
       this.facingenemy = "left";
-      this.enemy.body.velocity.x = -250;
-      this.enemy.scale.x = -1.5;
+      spriteThatCollided.body.velocity.x = -250;
+      spriteThatCollided.scale.x = -1.5;
     }
   }
-
-
-
-
-
-
-
-
-
-
 
   paused() {
 
