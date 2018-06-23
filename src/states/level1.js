@@ -45,7 +45,9 @@ class Level1 extends Phaser.State {
     this.player.animations.add('run', Phaser.Animation.generateFrameNames('knight_run_', 1, 8, '.png', 3), 10, true, false);
     this.player.animations.add('jump', Phaser.Animation.generateFrameNames('knight_jump_', 1, 4, '.png', 3), 10, false, false);
     this.player.animations.add('attack', Phaser.Animation.generateFrameNames('knight_attack_', 1, 3, '.png', 3), 10, true, false);
-    this.player.animations.add('die', Phaser.Animation.generateFrameNames('knight_die_', 1, 5, '.png', 3), 10, true, false);
+    this.playerdie = this.player.animations.add('die', Phaser.Animation.generateFrameNames('knight_die_', 1, 5, '.png', 3), 10, false, false);
+    this.playerdie.onComplete.add(this.playerDead, this);
+    
     this.player.animations.add('hit', Phaser.Animation.generateFrameNames('knight_hit_', 1, 2, '.png', 3), 10, false, false);
     this.player.animations.add('crouch', Phaser.Animation.generateFrameNames('knight_crouch_', 1, 2, '.png', 3), 10, false, false);
     this.player.animations.add('standing', [0], 20, true);
@@ -61,6 +63,7 @@ class Level1 extends Phaser.State {
     //this.player.body.collideWorldBounds = true;
     // game.camera.follow(p);
     this.cursorKeys = this.game.input.keyboard.createCursorKeys();
+    this.playerinput = true;
 
 
     // ENEMY ENEMY
@@ -69,7 +72,7 @@ class Level1 extends Phaser.State {
 
       this.enemies = this.game.add.physicsGroup();
 
-      for (var i = 0; i < 15; i++) {
+      for (var i = 0; i < 6; i++) {
         var rand = this.game.rnd.between(100, 900);
         // var enemy = this.game.add.sprite(rand, 30, 'wizardsheet', 'wizard_2_walk_001.png');
 
@@ -83,6 +86,8 @@ class Level1 extends Phaser.State {
         enemy.animations.add('jump', Phaser.Animation.generateFrameNames('wizard_2_jump_', 1, 4, '.png', 3), 10, false, false);
         enemy.animations.add('attack', Phaser.Animation.generateFrameNames('wizard_2_attack-a_', 1, 4, '.png', 3), 10, true, false);
         enemy.animations.add('die', Phaser.Animation.generateFrameNames('wizard_2_die_', 1, 5, '.png', 3), 10, true, false);
+        
+        
         enemy.animations.add('hit', Phaser.Animation.generateFrameNames('wizard_2_hit_', 1, 2, '.png', 3), 10, false, false);
         enemy.animations.add('crouch', Phaser.Animation.generateFrameNames('wizard_2__crouch_', 1, 2, '.png', 3), 10, false, false);
         enemy.animations.add('standing', [0], 20, true);
@@ -126,47 +131,51 @@ class Level1 extends Phaser.State {
     this.player.body.velocity.x = 0;
     var frameaction = false;
 
-    // player controll responses
-    if (this.cursorKeys.up.isDown) {
-      frameaction = true;
-      if (this.player.body.onFloor()) {
-        this.player.body.velocity.y = -400;
-        this.player.animations.play('jump');
+    // check if playerinput is possible
+    if (this.playerinput === true) {
+      // player controll responses
+      if (this.cursorKeys.up.isDown) {
+        frameaction = true;
+        if (this.player.body.onFloor()) {
+          this.player.body.velocity.y = -400;
+          this.player.animations.play('jump');
 
-      } else {
+        } else {
 
+        }
       }
-    }
-    if (this.cursorKeys.down.isDown) {
+      if (this.cursorKeys.down.isDown) {
 
-      this.player.animations.play('crouch');
-      frameaction = true;
-    }
-    if (this.cursorKeys.left.isDown) {
-      if (this.facingp1 = 'right') {
-        this.facingp1 = 'left';
-        this.player.scale.x = -1.5;
+        this.player.animations.play('crouch');
+        frameaction = true;
       }
+      if (this.cursorKeys.left.isDown) {
+        if (this.facingp1 = 'right') {
+          this.facingp1 = 'left';
+          this.player.scale.x = -1.5;
+        }
 
-      if (this.player.body.onFloor()) {
+        if (this.player.body.onFloor()) {
+          this.player.animations.play('walk');
+        }
+        frameaction = true;
+        this.player.body.velocity.x = -250;
+      }
+      if (this.cursorKeys.right.isDown) {
+        if (this.facingp1 = 'left') {
+          this.facingp1 = 'right';
+          this.player.scale.x = 1.5;
+        }
+        frameaction = true;
         this.player.animations.play('walk');
+        this.player.body.velocity.x = 250;
       }
-      frameaction = true;
-      this.player.body.velocity.x = -250;
-    }
-    if (this.cursorKeys.right.isDown) {
-      if (this.facingp1 = 'left') {
-        this.facingp1 = 'right';
-        this.player.scale.x = 1.5;
+
+      if (frameaction === false) {
+        this.player.animations.play('standing');
       }
-      frameaction = true;
-      this.player.animations.play('walk');
-      this.player.body.velocity.x = 250;
     }
 
-    if (frameaction === false) {
-      this.player.animations.play('standing');
-    }
 
   }
 
@@ -176,12 +185,12 @@ class Level1 extends Phaser.State {
   enemyAI(enemy) {
 
     // reset the position if leftbottom or rightbottom
-    if (enemy.x <= 60 && enemy.y > 680 ) {
+    if (enemy.x <= 60 && enemy.y > 680) {
       // check left bottom
       console.log("hitleftbottom");
       enemy.y = 30;
       enemy.x = 500;
-    } 
+    }
 
     // check right bottom
     if (enemy.x >= 960 && enemy.y > 680) {
@@ -201,7 +210,12 @@ class Level1 extends Phaser.State {
 
     }
 
-    this.game.physics.arcade.collide(this.player, enemy);
+    // only if player is active
+    if (this.playerinput === true){
+      this.game.physics.arcade.collide(this.player, enemy, this.playerEnemyCollide, null, this);
+    }
+    
+    
     this.game.physics.arcade.collide(this.enemies, enemy);
     this.game.physics.arcade.collide(enemy, this.collisionlayer, this.enemyCollisionHandler, null, this);
 
@@ -214,6 +228,26 @@ class Level1 extends Phaser.State {
         enemy.animations.play('jump');
       } else {}
     }
+  }
+
+  playerEnemyCollide(_playerobject, _enemythatcollided) {
+    console.log("playerofffff");
+    this.playerinput = false;
+    this.player.animations.play('die');
+    // TODO: make a die animation right here, but for now
+  }
+
+  // this is watching the animation dieing end?
+  playerDead(){
+    console.log("OKOKO");
+    this.game.time.events.add(Phaser.Timer.SECOND * 2, this.respawnPlayer, this);
+  }
+
+  respawnPlayer(){
+    this.player.animations.play('standing');
+    this.player.x = this.game.width/2;
+    this.player.y = this.game.height/2;
+    this.playerinput = true;
   }
 
 
